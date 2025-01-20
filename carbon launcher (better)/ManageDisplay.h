@@ -20,25 +20,25 @@ class ManageDisplay
 public:
 	ManageDisplay();
 
-	void displaywindow(std::vector<pair> pairs,std::string name, int selected,ManageInputs* Inputs, bool UpdateAll);
+	void displaywindow(std::vector<pair> pairs,std::string name,ManageInputs* Inputs);
 	void ChangeWindow(windowtype newWindow);
 
-	//heleper funcs
+	//helper funcs
 	windowtype getWindow(); 
 	void UpdateNameCallback(std::function<void(std::string)> func);
 private:
 	windowtype window = Normal;
 
+	bool WindowChanged = true;
 
-	std::string namecopy;
-	int oldCursorY;
+	int CursorY;
 	int CursorX;
 
 	TextBox* NameTextBox;
 
 
-	void NormalWindow(std::vector<pair> pairs, std::string name, int selected, bool UpdateAll);
-	void NameWindow(std::vector<pair> pairs, std::string name, int selected,ManageInputs* Inputs, bool UpdateAll);
+	void NormalWindow(std::vector<pair> pairs, std::string name, ManageInputs* Inputs);
+	void NameWindow(std::vector<pair> pairs, std::string name,ManageInputs* Inputs);
 
 	std::function<void(std::string)> CallbackFunc;
 };

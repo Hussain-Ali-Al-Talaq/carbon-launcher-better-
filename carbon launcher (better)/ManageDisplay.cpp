@@ -3,15 +3,16 @@
 ManageDisplay::ManageDisplay() {
 }
 
-void ManageDisplay::displaywindow(std::vector<pair> pairs, std::string name, int selected,ManageInputs* Inputs,bool UpdateAll) {
+void ManageDisplay::displaywindow(std::vector<pair> pairs, std::string name,ManageInputs* Inputs) {
+	
+
 	switch (window)
 	{
 	case Normal:
-		NormalWindow(pairs, name, selected, UpdateAll);
+		NormalWindow(pairs, name, Inputs);
 		break;
 	case Name:
-		NameWindow(pairs, name, selected,
-			 Inputs, UpdateAll);
+		NameWindow(pairs, name, Inputs);
 		break;
 	case Adding:
 		break;
@@ -22,8 +23,13 @@ void ManageDisplay::displaywindow(std::vector<pair> pairs, std::string name, int
 	}
 }
 
-void ManageDisplay::NormalWindow(std::vector<pair> pairs, std::string name, int selected,bool UpdateAll) {
-	if (UpdateAll) {
+void ManageDisplay::NormalWindow(std::vector<pair> pairs, std::string name, ManageInputs* Inputs) {
+	int nameYOffset = 2;
+
+	//full window refresh
+	if (WindowChanged) {
+		WindowChanged = false;
+
 		std::cout << "Name: " << name << "\n" << "\n";
 
 		for (int i = 0; i < pairs.size(); i++) {
@@ -36,35 +42,81 @@ void ManageDisplay::NormalWindow(std::vector<pair> pairs, std::string name, int 
 		std::cout << "   Add version" << "\n";
 		std::cout << "   delete version" << "\n";
 
-		oldCursorY = 1;
+		CursorY = nameYOffset;
 
-		util::ChangeLetter(">"[0], 1, 2); //add the cursor at the begining 
+		util::ChangeLetter(">"[0], 1, CursorY); //add the cursor at the begining 
 	}
 	else {
+		bool doUpdate = false;
 
-		if (selected > pairs.size() - 1) { //offset for the setting being a space apart
-			selected++; 
+		int oldCursorY = CursorY;
+
+		if (oldCursorY > (pairs.size() - 1) + nameYOffset) { //offset for the setting being a space apart
+			oldCursorY++; 
 		}
 
-		selected = selected + 2; //name offset
+		if (Inputs->GetKey(UpArrow) == pressed) {
+			CursorY--;
+			if (CursorY < nameYOffset) { 
+				CursorY = nameYOffset;
+			}
+			else {
+				doUpdate = !doUpdate;
+			}
+		}
 
-		util::ChangeLetter(" "[0], 1, oldCursorY); //remove the old one 
+		if (Inputs->GetKey(DownArrow) == pressed) {
+			CursorY++;
+			if (CursorY > (pairs.size() - 1) + 3 + nameYOffset) { // +3 is for the extra settings
+				CursorY = (pairs.size() - 1) + 3 + nameYOffset;
+			}
+			else {
+				doUpdate = !doUpdate;
+			}
+		}
 
-		util::ChangeLetter(">"[0], 1, selected);
-		oldCursorY = selected;
+		if (doUpdate) {
+			int settingsOffset = 0;
+
+			if (CursorY > (pairs.size() - 1) + nameYOffset) { //offset for the setting being a space apart
+				settingsOffset = 1; //don't add it to CursorY becuase this offset it temparary
+			}
+
+			util::ChangeLetter(" "[0], 1, oldCursorY); //remove the old one 
+
+			util::ChangeLetter(">"[0], 1, CursorY + settingsOffset);
+		}
+
+		if (Inputs->GetKey(Enter) == pressed) {
+			if (CursorY < pairs.size() + nameYOffset) {
+				std::cout << "write file!" << "\n"; //launch carbon
+			}
+			if (CursorY == pairs.size() + nameYOffset) {
+				ChangeWindow(Name);
+				WindowChanged = true;
+			}
+			if (CursorY == (pairs.size() + 1) + nameYOffset) {
+				std::cout << "Add version!" << "\n";
+			}
+			if (CursorY == (pairs.size() + 2) + nameYOffset) {
+				std::cout << "Delete Version!" << "\n";
+			}
+		}	
 	}
 }
 
 
-void ManageDisplay::NameWindow(std::vector<pair> pairs, std::string name, int selected,ManageInputs* Inputs, bool UpdateAll) {
-	int nameoffset = 6; // 6 is an offset for "Name: "
+void ManageDisplay::NameWindow(std::vector<pair> pairs, std::string name,ManageInputs* Inputs) {
+	int nameXoffset = 6; // 6 is an offset for "Name: "
 
 
-	if (UpdateAll) {
+	if (WindowChanged) {
+		WindowChanged = false;
+
 		system("cls");
 		std::cout << "Name: " << name;
 
-		NameTextBox = new TextBox(nameoffset, 0, name);
+		NameTextBox = new TextBox(nameXoffset, 0, name);
 	}
 	else {
 		NameTextBox->Update(Inputs);
