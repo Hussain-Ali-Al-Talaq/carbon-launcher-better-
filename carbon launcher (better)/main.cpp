@@ -8,55 +8,21 @@
 #include <functional>
 #include <chrono>
 
-class RedundencyManager
-{
-public:
-    // std::function<return_type(list of argument_type(s))>
-    void Init(std::function<void(std::string)> f)
-    {
-        f("aaaa");
-    }
-};
-
-class CLoggersInfra
-{
-private:
-    std::string member = "Hello from non static member callback!";
-
-public:
-    void NonStaticRedundencyManagerCallBack(std::string);
-
-};
-void CLoggersInfra::NonStaticRedundencyManagerCallBack(std::string name) {
-    member = name;
-}
-
-
-
 int main()
 {   
-
-    auto instance = RedundencyManager();
-    CLoggersInfra CLoggersInfra;
-    auto callback3 = std::bind(&CLoggersInfra::NonStaticRedundencyManagerCallBack,CLoggersInfra,std::placeholders::_1);
-    instance.Init(callback3);
-        
-
     HandleFile file;
     ManageInputs Inputs;
     ManageDisplay Display;
 
-    auto A = std::bind(&HandleFile::UpdateName, &file, std::placeholders::_1);
-    Display.UpdateNameCallback(A);
 
     int selected = 0;
     bool updateDisplay = true;
     file.Read();
 
     Display.displaywindow(file.getPair(), file.getName(), selected,&Inputs, true);
+    Display.UpdateNameCallback(std::bind(&HandleFile::UpdateName, &file, std::placeholders::_1));
 
-
-    std::chrono::duration<double> LastFrameTime = std::chrono::system_clock::now().time_since_epoch();
+    std::chrono::duration<double> LastFrameTime = std::chrono::system_clock::now().time_since_epoch(); 
 
     while (true) {
         //limit frame rate
