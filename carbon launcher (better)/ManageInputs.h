@@ -4,6 +4,7 @@
 #include <conio.h>
 #include "util.h"
 #include "thread"
+#include <chrono>
 
 enum Keys
 {
@@ -26,7 +27,12 @@ struct KeyState
 {
 	int key;
 	Status status = released;
+
 	bool toggled = false;
+
+	float HoldTime = 0;
+	bool HoldTimeStarted = false;
+	bool burst = false;
 };
 
 class InputThread {
@@ -53,13 +59,19 @@ public:
 	void updateKeys();
 
 	Status GetKey(Keys);
+	bool GetKeyPressed(Keys);
 	wchar_t GetAnyKeyPressed();
 	
 private:
 	const static int KeysNumber = 256;
 	KeyState* keyStates;
-	void updatekey(int);
+	void updatekey(int,long long);
 
 	char NumbersToSymbols[10]{'!','@','#','$','%','^','&','*','(',')'};
 	InputThread* thread;
+
+	std::chrono::duration<double> LastUpdateTime = std::chrono::system_clock::now().time_since_epoch();
+
+	const float burstStartTime = 300; //in ms
+	const float burstInbetweenTime = 55; //in ms
 };

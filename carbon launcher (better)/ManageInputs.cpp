@@ -10,22 +10,30 @@ ManageInputs::ManageInputs() {
 }
 
 void ManageInputs::updateKeys() {
+	long long elapsed_ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch() - LastUpdateTime).count();
+	LastUpdateTime = std::chrono::system_clock::now().time_since_epoch();
+
 	for (int i = 0; i < KeysNumber; i++) {
-		updatekey(i);
+		updatekey(i, elapsed_ms);
 	}
 }
 
 
-void ManageInputs::updatekey(int key) {
+void ManageInputs::updatekey(int key,long long elapsed_ms) {
 	if (key < 0) return;
 
 	bool KeyDown = (GetKeyState(key) >> 15) && 8000;
 	bool KeyToggled = (GetKeyState(key) << 15) && 8000;
 
+	if (key == VK_CAPITAL) { //capital toggle case
+		keyStates[key].toggled = KeyToggled;
+	}
+
 	if (KeyDown) {
 		if (!keyStates[key].status == Status::released)
 		{
 			keyStates[key].status = Status::hold;
+			keyStates[key].HoldTime += elapsed_ms;
 		}
 		else
 		{
@@ -34,15 +42,32 @@ void ManageInputs::updatekey(int key) {
 	}
 	else {
 		keyStates[key].status = Status::released;
+		keyStates[key].HoldTimeStarted = false;
+		keyStates[key].HoldTime = 0;
+		keyStates[key].burst = false;
 	}
 
-	if (key == VK_CAPITAL) { //capital toggle case
-		keyStates[key].toggled = KeyToggled;
+	if (keyStates[key].HoldTimeStarted) {
+		if (keyStates[key].HoldTime >= burstInbetweenTime) {
+			keyStates[key].HoldTime -= burstInbetweenTime;
+			keyStates[key].burst = true;
+		}
+		else {
+			keyStates[key].burst = false;
+		}
+	}
+	else if(keyStates[key].HoldTime >= burstStartTime){
+		keyStates[key].HoldTime -= burstStartTime;
+		keyStates[key].HoldTimeStarted = true;
 	}
 }
 
 Status ManageInputs::GetKey(Keys key) {
 	return keyStates[key].status;
+}
+
+bool ManageInputs::GetKeyPressed(Keys key) {
+	return keyStates[key].status == pressed || keyStates[key].burst;
 }
 
 wchar_t ManageInputs::GetAnyKeyPressed() {

@@ -9,7 +9,7 @@
 
 enum windowtype
 {
-	Normal,
+	Main,
 	Name,
 	Adding,
 	Deleting,
@@ -27,7 +27,7 @@ public:
 	windowtype getWindow(); 
 	void UpdateNameCallback(std::function<void(std::string)> func);
 private:
-	windowtype window = Normal;
+	windowtype window = Main;
 
 	bool WindowChanged = true;
 
@@ -41,5 +41,8 @@ private:
 	void NameWindow(std::vector<pair> pairs, std::string name,ManageInputs* Inputs);
 
 	std::function<void(std::string)> CallbackFunc;
+
+	//helper funcs
+	bool UpdateYCursor(ManageInputs* Inputs, int minValue, int maxValue);
 };
 

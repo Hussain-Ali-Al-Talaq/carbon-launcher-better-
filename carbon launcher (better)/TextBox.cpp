@@ -21,14 +21,14 @@ void TextBox::UpdateCursor(ManageInputs* Inputs) {
 	int messagelen = xPosition + text.length();
 
 	//move cursor
-	if (Inputs->GetKey(LeftArrow) == pressed) {
+	if (Inputs->GetKeyPressed(LeftArrow)) {
 		CursorX--;
 		if (CursorX < xPosition) {
 			CursorX = xPosition;
 		}
 
 	}
-	if (Inputs->GetKey(RightArrow) == pressed) {
+	if (Inputs->GetKeyPressed(RightArrow)) {
 		CursorX++;
 
 		if (CursorX > messagelen) {
@@ -41,7 +41,7 @@ void TextBox::HandleDeleteLetter(ManageInputs* Inputs) {
 	if (text.length() > 0) {
 
 		//i know that the delete key should behave different but i don't care
-		if ((Inputs->GetKey(BackSpace) == pressed || Inputs->GetKey(DeleteKey) == pressed) && CursorX != xPosition) {
+		if ((Inputs->GetKeyPressed(BackSpace) || Inputs->GetKeyPressed(DeleteKey)) && CursorX != xPosition) {
 
 			std::string tmptext;
 
@@ -83,7 +83,7 @@ void TextBox::HandleAddLetter(ManageInputs* Inputs) {
 		if (i == CursorX - xPosition) { //see if we're where the cursor is
 			tmptext += (char)c;
 		}
-		if (i <= text.length() - 1) { // add the letters as we go
+		if (i <= text.length() - 1 && text[i] != '\0') { // add the letters as we go
 			tmptext += text[i];
 		}
 
@@ -94,4 +94,8 @@ void TextBox::HandleAddLetter(ManageInputs* Inputs) {
 	}
 	text = tmptext;
 	CursorX++;
+}
+
+std::string TextBox::GetName() {
+	return text;
 }

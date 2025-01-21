@@ -14,6 +14,7 @@ public:
 	
 	void Update(ManageInputs* Inputs);
 
+	std::string GetName();
 private:
 	int xPosition;
 	int yPosition;

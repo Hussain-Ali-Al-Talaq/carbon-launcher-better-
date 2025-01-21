@@ -26,9 +26,9 @@ int main()
     while (true) {
         //limit frame rate
         std::chrono::duration<double> CurrentTime = std::chrono::system_clock::now().time_since_epoch(); 
-        long long elapsed_seconds = std::chrono::duration_cast<std::chrono::milliseconds>(CurrentTime - LastFrameTime).count();
+        long long elapsed_ms = std::chrono::duration_cast<std::chrono::milliseconds>(CurrentTime - LastFrameTime).count();
 
-        if (elapsed_seconds > 16) {
+        if (elapsed_ms > 16) {
             LastFrameTime = std::chrono::system_clock::now().time_since_epoch();
         }
         else {

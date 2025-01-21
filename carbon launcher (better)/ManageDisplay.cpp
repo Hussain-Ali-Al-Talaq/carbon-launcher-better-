@@ -8,7 +8,7 @@ void ManageDisplay::displaywindow(std::vector<pair> pairs, std::string name,Mana
 
 	switch (window)
 	{
-	case Normal:
+	case Main:
 		NormalWindow(pairs, name, Inputs);
 		break;
 	case Name:
@@ -30,7 +30,9 @@ void ManageDisplay::NormalWindow(std::vector<pair> pairs, std::string name, Mana
 	if (WindowChanged) {
 		WindowChanged = false;
 
-		std::cout << "Name: " << name << "\n" << "\n";
+		system("cls");
+
+		std::cout << "Username: " << name << "\n" << "\n";
 
 		for (int i = 0; i < pairs.size(); i++) {
 			std::cout << "   " << pairs[i].name << "\n";
@@ -47,32 +49,12 @@ void ManageDisplay::NormalWindow(std::vector<pair> pairs, std::string name, Mana
 		util::ChangeLetter(">"[0], 1, CursorY); //add the cursor at the begining 
 	}
 	else {
-		bool doUpdate = false;
-
 		int oldCursorY = CursorY;
+
+		bool doUpdate = UpdateYCursor(Inputs, nameYOffset, (pairs.size() - 1) + 3 + nameYOffset); // +3 is for the extra settings
 
 		if (oldCursorY > (pairs.size() - 1) + nameYOffset) { //offset for the setting being a space apart
 			oldCursorY++; 
-		}
-
-		if (Inputs->GetKey(UpArrow) == pressed) {
-			CursorY--;
-			if (CursorY < nameYOffset) { 
-				CursorY = nameYOffset;
-			}
-			else {
-				doUpdate = !doUpdate;
-			}
-		}
-
-		if (Inputs->GetKey(DownArrow) == pressed) {
-			CursorY++;
-			if (CursorY > (pairs.size() - 1) + 3 + nameYOffset) { // +3 is for the extra settings
-				CursorY = (pairs.size() - 1) + 3 + nameYOffset;
-			}
-			else {
-				doUpdate = !doUpdate;
-			}
 		}
 
 		if (doUpdate) {
@@ -87,13 +69,12 @@ void ManageDisplay::NormalWindow(std::vector<pair> pairs, std::string name, Mana
 			util::ChangeLetter(">"[0], 1, CursorY + settingsOffset);
 		}
 
-		if (Inputs->GetKey(Enter) == pressed) {
+		if (Inputs->GetKeyPressed(Enter)) {
 			if (CursorY < pairs.size() + nameYOffset) {
 				std::cout << "write file!" << "\n"; //launch carbon
 			}
 			if (CursorY == pairs.size() + nameYOffset) {
 				ChangeWindow(Name);
-				WindowChanged = true;
 			}
 			if (CursorY == (pairs.size() + 1) + nameYOffset) {
 				std::cout << "Add version!" << "\n";
@@ -107,21 +88,41 @@ void ManageDisplay::NormalWindow(std::vector<pair> pairs, std::string name, Mana
 
 
 void ManageDisplay::NameWindow(std::vector<pair> pairs, std::string name,ManageInputs* Inputs) {
-	int nameXoffset = 6; // 6 is an offset for "Name: "
+	int nameXoffset = 10; // 6 is an offset for "Username: "
 
 
 	if (WindowChanged) {
 		WindowChanged = false;
 
 		system("cls");
-		std::cout << "Name: " << name;
+		std::cout << "Username: " << name;
+
+		char text[15] = " - SaveAndExit";
+		util::ChangeWord(text, 15, 0, 2); // so we don't move the cursor
 
 		NameTextBox = new TextBox(nameXoffset, 0, name);
+
+		CursorY = 0;
 	}
 	else {
-		NameTextBox->Update(Inputs);
-		if (CallbackFunc != NULL) {
-			CallbackFunc("dddd");
+		if (UpdateYCursor(Inputs, 0, 1)) {
+			if (CursorY == 0) {
+				util::ChangeLetter('-', 1, 2); // so we don't move the cursor
+			}
+			else if (CursorY == 1) {
+				util::ChangeLetter('>', 1, 2); // so we don't move the cursor
+				util::setCursorPosition(1,2);
+			}
+		}
+		if (CursorY == 0) {
+			NameTextBox->Update(Inputs);
+		}
+		
+		if (Inputs->GetKeyPressed(Enter)) {
+			ChangeWindow(Main);
+			if (CallbackFunc != NULL) {
+				CallbackFunc(NameTextBox->GetName());
+			}
 		}
 	}
 }
@@ -132,8 +133,34 @@ windowtype ManageDisplay::getWindow() {
 
 void ManageDisplay::ChangeWindow(windowtype newWindow) {
 	window = newWindow;
+	WindowChanged = true;
 }
 
 void ManageDisplay::UpdateNameCallback(std::function<void(std::string)> Func) {
 	CallbackFunc = Func;
+}
+
+bool ManageDisplay::UpdateYCursor(ManageInputs* Inputs, int minValue, int maxValue) {
+	bool updated = false;
+
+	if (Inputs->GetKeyPressed(UpArrow)) {
+		CursorY--;
+		if (CursorY < minValue) {
+			CursorY = minValue;
+		}
+		else {
+			updated = !updated;
+		}
+	}
+
+	if (Inputs->GetKeyPressed(DownArrow)) {
+		CursorY++;
+		if (CursorY > maxValue) { 
+			CursorY = maxValue;
+		}
+		else {
+			updated = !updated;
+		}
+	}
+	return updated;
 }
