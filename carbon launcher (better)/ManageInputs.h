@@ -72,6 +72,6 @@ private:
 
 	std::chrono::duration<double> LastUpdateTime = std::chrono::system_clock::now().time_since_epoch();
 
-	const float burstStartTime = 300; //in ms
+	const float burstStartTime = 250; //in ms
 	const float burstInbetweenTime = 55; //in ms
 };

@@ -18,8 +18,10 @@ int main()
     bool updateDisplay = true;
     file.Read();
 
-    Display.displaywindow(file.getPair(), file.getName(),&Inputs);
-    Display.UpdateNameCallback(std::bind(&HandleFile::UpdateName, &file, std::placeholders::_1));
+    Display.displaywindow(&Inputs, file.getPair(), file.getName());
+
+    Display.SetNameCallback(std::bind(&HandleFile::UpdateName, &file, std::placeholders::_1));
+    Display.SetDeleteCallback(std::bind(&HandleFile::deleteVersion, &file, std::placeholders::_1));
 
     std::chrono::duration<double> LastFrameTime = std::chrono::system_clock::now().time_since_epoch(); 
 
@@ -37,7 +39,7 @@ int main()
 
         Inputs.updateKeys();
 
-        Display.displaywindow(file.getPair(), file.getName(), &Inputs);        
+        Display.displaywindow(&Inputs, file.getPair(), file.getName());
     }
     
 }

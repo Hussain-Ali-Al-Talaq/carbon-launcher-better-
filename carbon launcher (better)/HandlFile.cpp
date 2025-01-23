@@ -40,10 +40,10 @@ void HandleFile::Read() {
 				continue;
 			}
 
-			if (data[i] == "\n"[0]) {
+			if (data[i] == '\n') {
 				continue;
 			}
-			if (data[i] == "."[0] && !foundname) {
+			if (data[i] == '.' && !foundname) {
 				foundname = true;
 				continue;
 			}
@@ -64,6 +64,7 @@ void HandleFile::Read() {
 
 void HandleFile::deleteVersion(int index) {
 	std::vector<pair> tmp;
+
 	for (int i = 0; i < pairs.size();i++) {
 		if (i == index) {
 			continue;

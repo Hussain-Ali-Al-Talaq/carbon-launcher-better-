@@ -3,32 +3,88 @@
 ManageDisplay::ManageDisplay() {
 }
 
-void ManageDisplay::displaywindow(std::vector<pair> pairs, std::string name,ManageInputs* Inputs) {
+void ManageDisplay::displaywindow(ManageInputs* Inputs, std::vector<pair> pairs, std::string name) {
 	
 
 	switch (window)
 	{
 	case Main:
-		NormalWindow(pairs, name, Inputs);
+		NormalWindow(Inputs, pairs, name);
 		break;
 	case Name:
-		NameWindow(pairs, name, Inputs);
+		NameWindow(Inputs, pairs, name);
 		break;
 	case Adding:
 		break;
 	case Deleting:
+		DeleteWindow(Inputs, pairs, name);
 		break;
 	default:
 		break;
 	}
 }
+void ManageDisplay::NormalWindow(ManageInputs* Inputs, std::vector<pair> pairs, std::string name) {
+	std::vector<std::string> settings;
 
-void ManageDisplay::NormalWindow(std::vector<pair> pairs, std::string name, ManageInputs* Inputs) {
-	int nameYOffset = 2;
+	settings.push_back("Change Name");
+	settings.push_back("Add version");
+	settings.push_back("delete version");
+
+	OptionsWindow(Inputs, pairs, settings, name, '>');
+
+	if (Inputs->GetKey(Enter) == pressed) {
+		if (CursorY < pairs.size() + nameYOffset) {
+			std::cout << "write file!" << "\n"; //launch carbon
+		}
+
+		//the rest of the settings
+		if (CursorY == pairs.size() + nameYOffset) {
+			ChangeWindow(Name);
+		}
+		if (CursorY == (pairs.size() + 1) + nameYOffset) {
+			std::cout << "Add Version!" << "\n";
+		}
+		if (CursorY == (pairs.size() + 2) + nameYOffset) {
+			ChangeWindow(Deleting);
+		}
+		
+	}
+}
+
+void ManageDisplay::DeleteWindow(ManageInputs* Inputs, std::vector<pair> pairs, std::string name) {
+	std::vector<std::string> settings;
+
+	settings.push_back("SaveAndExit");
+
+	OptionsWindow(Inputs, pairs, settings, name, '*');
+
+	if (Inputs->GetKey(Enter) == pressed) {
+		if (CursorY < pairs.size() + nameYOffset) {
+			if (DeleteCallback != NULL) {
+				DeleteCallback(CursorY - nameYOffset);
+				ReprintWindow = true;
+			}
+		}
+
+		if (CursorY == pairs.size() + nameYOffset) {
+			ChangeWindow(Main);
+		}
+	}
+}
+
+void ManageDisplay::OptionsWindow(ManageInputs* Inputs, std::vector<pair> pairs, std::vector<std::string> settings, std::string name, char pointer) {
 
 	//full window refresh
-	if (WindowChanged) {
+	if (WindowChanged || ReprintWindow) {
+		if (!ReprintWindow) {
+			CursorY = nameYOffset;
+		}
+		else if(CursorY > (pairs.size() - 1) + nameYOffset && pairs.size() != 0){
+			CursorY = (pairs.size() - 1) + nameYOffset;
+		}
+
 		WindowChanged = false;
+		ReprintWindow = false;
 
 		system("cls");
 
@@ -37,57 +93,49 @@ void ManageDisplay::NormalWindow(std::vector<pair> pairs, std::string name, Mana
 		for (int i = 0; i < pairs.size(); i++) {
 			std::cout << "   " << pairs[i].name << "\n";
 		}
-		std::cout << "\n";
 
+		if (pairs.size() != 0) {
+			std::cout << "\n";
+		}
 
-		std::cout << "   Change Name" << "\n";
-		std::cout << "   Add version" << "\n";
-		std::cout << "   delete version" << "\n";
+		if (settings.size() != 0) {
+			for (int i = 0; i < settings.size(); i++) {
+				std::cout << "   " << settings[i] << "\n";
+			}
+		}
 
-		CursorY = nameYOffset;
+		
 
-		util::ChangeLetter(">"[0], 1, CursorY); //add the cursor at the begining 
+		util::ChangeLetter(pointer, 1, CursorY); //add the cursor at the begining
 	}
 	else {
+
 		int oldCursorY = CursorY;
 
-		bool doUpdate = UpdateYCursor(Inputs, nameYOffset, (pairs.size() - 1) + 3 + nameYOffset); // +3 is for the extra settings
+		bool doUpdate = UpdateYCursor(Inputs, nameYOffset, (pairs.size() - 1) + settings.size() + nameYOffset);
 
-		if (oldCursorY > (pairs.size() - 1) + nameYOffset) { //offset for the setting being a space apart
-			oldCursorY++; 
+		if (pairs.size() != 0) {
+			if (oldCursorY > (pairs.size() - 1) + nameYOffset) { //offset for the setting being a space apart
+				oldCursorY++;
+			}
 		}
 
 		if (doUpdate) {
 			int settingsOffset = 0;
 
-			if (CursorY > (pairs.size() - 1) + nameYOffset) { //offset for the setting being a space apart
+			if (CursorY > (pairs.size() - 1) + nameYOffset && pairs.size() != 0) { //offset for the setting being a space apart
 				settingsOffset = 1; //don't add it to CursorY becuase this offset it temparary
 			}
 
-			util::ChangeLetter(" "[0], 1, oldCursorY); //remove the old one 
+			util::ChangeLetter(' ', 1, oldCursorY); //remove the old one 
 
-			util::ChangeLetter(">"[0], 1, CursorY + settingsOffset);
+			util::ChangeLetter(pointer, 1, CursorY + settingsOffset);
 		}
-
-		if (Inputs->GetKeyPressed(Enter)) {
-			if (CursorY < pairs.size() + nameYOffset) {
-				std::cout << "write file!" << "\n"; //launch carbon
-			}
-			if (CursorY == pairs.size() + nameYOffset) {
-				ChangeWindow(Name);
-			}
-			if (CursorY == (pairs.size() + 1) + nameYOffset) {
-				std::cout << "Add version!" << "\n";
-			}
-			if (CursorY == (pairs.size() + 2) + nameYOffset) {
-				std::cout << "Delete Version!" << "\n";
-			}
-		}	
 	}
 }
 
 
-void ManageDisplay::NameWindow(std::vector<pair> pairs, std::string name,ManageInputs* Inputs) {
+void ManageDisplay::NameWindow(ManageInputs* Inputs, std::vector<pair> pairs, std::string name) {
 	int nameXoffset = 10; // 6 is an offset for "Username: "
 
 
@@ -118,10 +166,11 @@ void ManageDisplay::NameWindow(std::vector<pair> pairs, std::string name,ManageI
 			NameTextBox->Update(Inputs);
 		}
 		
-		if (Inputs->GetKeyPressed(Enter)) {
+		if (Inputs->GetKey(Enter) == pressed) {
 			ChangeWindow(Main);
-			if (CallbackFunc != NULL) {
-				CallbackFunc(NameTextBox->GetName());
+
+			if (NameCallback != NULL) {
+				NameCallback(NameTextBox->GetName());
 			}
 		}
 	}
@@ -136,8 +185,11 @@ void ManageDisplay::ChangeWindow(windowtype newWindow) {
 	WindowChanged = true;
 }
 
-void ManageDisplay::UpdateNameCallback(std::function<void(std::string)> Func) {
-	CallbackFunc = Func;
+void ManageDisplay::SetNameCallback(std::function<void(std::string)> Func) {
+	NameCallback = Func;
+}
+void ManageDisplay::SetDeleteCallback(std::function<void(int)> Func) {
+	DeleteCallback = Func;
 }
 
 bool ManageDisplay::UpdateYCursor(ManageInputs* Inputs, int minValue, int maxValue) {

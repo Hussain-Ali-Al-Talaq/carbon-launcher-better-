@@ -20,16 +20,21 @@ class ManageDisplay
 public:
 	ManageDisplay();
 
-	void displaywindow(std::vector<pair> pairs,std::string name,ManageInputs* Inputs);
+	void displaywindow(ManageInputs* Inputs, std::vector<pair> pairs,std::string name);
 	void ChangeWindow(windowtype newWindow);
 
 	//helper funcs
 	windowtype getWindow(); 
-	void UpdateNameCallback(std::function<void(std::string)> func);
+
+	void SetNameCallback(std::function<void(std::string)> func);
+	void SetDeleteCallback(std::function<void(int)> func);
 private:
 	windowtype window = Main;
 
 	bool WindowChanged = true;
+	bool ReprintWindow = false;
+
+	const int nameYOffset = 2;
 
 	int CursorY;
 	int CursorX;
@@ -37,10 +42,14 @@ private:
 	TextBox* NameTextBox;
 
 
-	void NormalWindow(std::vector<pair> pairs, std::string name, ManageInputs* Inputs);
-	void NameWindow(std::vector<pair> pairs, std::string name,ManageInputs* Inputs);
+	void OptionsWindow(ManageInputs* Inputs, std::vector<pair> pairs, std::vector<std::string> settings, std::string name, char pointer);
 
-	std::function<void(std::string)> CallbackFunc;
+	void NormalWindow(ManageInputs* Inputs, std::vector<pair> pairs, std::string name);
+	void NameWindow(ManageInputs* Inputs, std::vector<pair> pairs, std::string name);
+	void DeleteWindow(ManageInputs* Inputs, std::vector<pair> pairs, std::string name);
+
+	std::function<void(std::string)> NameCallback;
+	std::function<void(int)> DeleteCallback;
 
 	//helper funcs
 	bool UpdateYCursor(ManageInputs* Inputs, int minValue, int maxValue);

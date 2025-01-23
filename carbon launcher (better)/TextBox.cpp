@@ -57,7 +57,7 @@ void TextBox::HandleDeleteLetter(ManageInputs* Inputs) {
 
 				if (i == text.length() - 1) { //delete last letter
 
-					util::ChangeLetter(" "[0], xPosition + i, yPosition);
+					util::ChangeLetter(' ', xPosition + i, yPosition);
 				}
 			}
 			text = tmptext;
